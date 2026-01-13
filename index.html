@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibStack | Professional Book Catalog</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Lib<span class="highlight">Stack</span></h1>
+            <p>Personal Book Collection & Reading Statistics</p>
+        </header>
+
+        <main>
+            <section class="card input-section">
+                <h2>Add New Book</h2>
+                <form id="book-form">
+                    <div class="form-group">
+                        <label for="book-title">Book Title</label>
+                        <input type="text" id="book-title" placeholder="e.g. The Great Gatsby" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="book-author">Author</label>
+                        <input type="text" id="book-author" placeholder="e.g. F. Scott Fitzgerald" required>
+                    </div>
+
+                    <button type="submit" class="btn primary-btn">+ Add to Catalog</button>
+                </form>
+            </section>
+
+            <section class="card list-section">
+                <div class="list-header">
+                    <h2>Library Catalog</h2>
+                    <input type="text" id="search-bar" placeholder="🔍 Search title or author..." class="search-input">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="book-list">
+                            </tbody>
+                    </table>
+                    <p id="empty-msg">Your library is currently empty.</p>
+                </div>
+            </section>
+
+            <section class="card results-section">
+                <h2>Reading Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Total Books</span>
+                        <span class="stat-value" id="total-books">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Borrowed</span>
+                        <span class="stat-value" id="borrowed-count">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Availability</span>
+                        <span class="stat-value" id="avail-percent">0%</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
