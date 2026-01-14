@@ -9,9 +9,23 @@ function Book(title, author, pages, read, borrowed, borrower) {
     this.borrower = borrower;
 }
 
+// NEW: Save data to browser memory
+function saveToLocal() {
+    localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
+}
+
+// NEW: Load data when page opens
+function restoreFromLocal() {
+    const savedData = localStorage.getItem('myLibrary');
+    if (savedData) {
+        myLibrary = JSON.parse(savedData);
+        render();
+    }
+}
+
 function render() {
     const libraryGrid = document.getElementById('library-grid');
-    libraryGrid.innerHTML = ""; // This cleans the "Empty" message
+    libraryGrid.innerHTML = ""; 
 
     if (myLibrary.length === 0) {
         libraryGrid.innerHTML = '<p class="empty-msg">The library is empty.</p>';
@@ -41,6 +55,7 @@ function render() {
 
     const readCount = myLibrary.filter(b => b.read).length;
     updateStats(myLibrary.length, readCount);
+    saveToLocal(); // Save every time the UI updates
 }
 
 function updateStats(total, read) {
@@ -88,6 +103,9 @@ document.getElementById('add-book-form').addEventListener('submit', (e) => {
     e.target.reset();
 });
 
-render(); // Start empty
+// START: Try to load existing books first
+restoreFromLocal();
+if (myLibrary.length === 0) render();
+
 
 
