@@ -1,86 +1,93 @@
-// 1. Data Store
 let myLibrary = [];
 
-// 2. Book Constructor
-function Book(title, author, pages, read) {
+function Book(title, author, pages, read, borrowed, borrower) {
     this.title = title;
     this.author = author;
-    this.pages = Number(pages);
+    this.pages = pages;
     this.read = read;
+    this.borrowed = borrowed;
+    this.borrower = borrower;
 }
 
-// 3. The Core "Fix" Function (The Renderer)
 function render() {
     const libraryGrid = document.getElementById('library-grid');
-    const totalDisplay = document.getElementById('total-books');
-    const percentDisplay = document.getElementById('read-percentage');
+    libraryGrid.innerHTML = ""; // This cleans the "Empty" message
 
-    // Step A: Clear the grid completely (Fixes "Empty" message bug)
-    libraryGrid.innerHTML = "";
-
-    // Step B: Check if library is empty
     if (myLibrary.length === 0) {
-        libraryGrid.innerHTML = '<p class="empty-msg">Your library is currently empty.</p>';
-        totalDisplay.textContent = "0";
-        percentDisplay.textContent = "0%";
+        libraryGrid.innerHTML = '<p class="empty-msg">The library is empty.</p>';
+        updateStats(0, 0);
         return;
     }
 
-    // Step C: Calculate Stats (Fixes Percentage bug)
-    const total = myLibrary.length;
-    const readCount = myLibrary.filter(book => book.read).length;
-    const percentage = Math.floor((readCount / total) * 100);
-
-    totalDisplay.textContent = total;
-    percentDisplay.textContent = `${percentage}%`;
-
-    // Step D: Create Book Cards
     myLibrary.forEach((book, index) => {
         const card = document.createElement('div');
         card.classList.add('book-card');
-        
+        if (book.borrowed) card.classList.add('borrowed');
+
         card.innerHTML = `
+            ${book.borrowed ? `<span class="borrower-tag">Borrowed by: ${book.borrower}</span>` : ''}
             <h3>${book.title}</h3>
-            <p>By ${book.author}</p>
-            <p>${book.pages} Pages</p>
-            <button onclick="toggleRead(${index})" class="${book.read ? 'read-true' : 'read-false'}">
+            <p>By ${book.author} | ${book.pages} pages</p>
+            <button class="status-btn ${book.read ? 'is-read' : ''}" onclick="toggleRead(${index})">
                 ${book.read ? 'Read' : 'Not Read'}
             </button>
-            <button onclick="removeBook(${index})" class="delete-btn">Remove</button>
+            <button class="borrow-btn" onclick="toggleBorrow(${index})">
+                ${book.borrowed ? 'Return Book' : 'Loan Book'}
+            </button>
+            <button class="remove-btn" onclick="removeBook(${index})">Remove</button>
         `;
         libraryGrid.appendChild(card);
     });
+
+    const readCount = myLibrary.filter(b => b.read).length;
+    updateStats(myLibrary.length, readCount);
 }
 
-// 4. Interaction Logic
-function removeBook(index) {
-    myLibrary.splice(index, 1);
-    render(); // Redraw everything
+function updateStats(total, read) {
+    const percent = total > 0 ? Math.floor((read / total) * 100) : 0;
+    document.getElementById('total-books').textContent = total;
+    document.getElementById('read-percentage').textContent = `${percent}%`;
 }
 
 function toggleRead(index) {
     myLibrary[index].read = !myLibrary[index].read;
-    render(); // Redraw everything
+    render();
 }
 
-// 5. Form Handling
-const bookForm = document.getElementById('add-book-form');
-bookForm.addEventListener('submit', (e) => {
+function toggleBorrow(index) {
+    const book = myLibrary[index];
+    if (!book.borrowed) {
+        const name = prompt("Who is borrowing this book?");
+        if (name) {
+            book.borrowed = true;
+            book.borrower = name;
+        }
+    } else {
+        book.borrowed = false;
+        book.borrower = "";
+    }
+    render();
+}
+
+function removeBook(index) {
+    myLibrary.splice(index, 1);
+    render();
+}
+
+document.getElementById('add-book-form').addEventListener('submit', (e) => {
     e.preventDefault();
-    
     const title = document.getElementById('title').value;
     const author = document.getElementById('author').value;
     const pages = document.getElementById('pages').value;
     const read = document.getElementById('read-status').checked;
+    const isBorrowed = document.getElementById('is-borrowed').checked;
+    const borrower = document.getElementById('borrower-name').value;
 
-    const newBook = new Book(title, author, pages, read);
-    myLibrary.push(newBook);
-    
-    render(); // Draw the new book and update percentage
-    bookForm.reset(); // Clear form fields
+    myLibrary.push(new Book(title, author, pages, read, isBorrowed, borrower));
+    render();
+    e.target.reset();
 });
 
-// Run once on load to show initial empty state
-render();
+render(); // Start empty
 
 
