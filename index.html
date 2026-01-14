@@ -25,9 +25,13 @@
             <input type="text" id="title" placeholder="Book Title" required>
             <input type="text" id="author" placeholder="Author" required>
             <input type="number" id="pages" placeholder="Total Pages" required>
-            <label>
-                <input type="checkbox" id="read-status"> Mark as Read
-            </label>
+            
+            <div class="borrow-group">
+                <label><input type="checkbox" id="is-borrowed"> Is Borrowed?</label>
+                <input type="text" id="borrower-name" placeholder="Who borrowed it?">
+            </div>
+
+            <label><input type="checkbox" id="read-status"> Mark as Read</label>
             <button type="submit" id="submit-btn">Add to Library</button>
         </form>
     </section>
