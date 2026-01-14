@@ -1,123 +1,93 @@
-// 1. Select DOM Elements
-const bookForm = document.getElementById('book-form');
-const bookList = document.getElementById('book-list'); // The container for cards or table rows
-const searchInput = document.getElementById('search-input');
+// 1. Setup the Library array
+let myLibrary = [];
 
-// Stats Elements
-const totalBooksEl = document.getElementById('total-books');
-const borrowedCountEl = document.getElementById('borrowed-count');
-const availableCountEl = document.getElementById('available-count');
+// 2. Book Constructor
+function Book(title, author, pages, read) {
+    this.title = title;
+    this.author = author;
+    this.pages = Number(pages); // Ensures math works
+    this.read = read; // Expected to be boolean
+}
 
-// 2. State Management (Initialize from LocalStorage or empty array)
-let library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+// 3. Add Book to Library
+function addBookToLibrary(title, author, pages, read) {
+    const newBook = new Book(title, author, pages, read);
+    myLibrary.push(newBook);
+    render(); // Refresh the UI
+}
 
-// 3. Event Listeners
-bookForm.addEventListener('submit', addBook);
-searchInput.addEventListener('input', searchBooks); // Search as you type
-document.addEventListener('DOMContentLoaded', renderUI);
+// 4. Update Stats (Percentage and Counts)
+function updateStats() {
+    const totalBooks = myLibrary.length;
+    const booksRead = myLibrary.filter(book => book.read).length;
+    
+    // Calculate percentage correctly
+    const percentage = totalBooks > 0 ? Math.floor((booksRead / totalBooks) * 100) : 0;
 
-// 4. Function: Add Book
-function addBook(e) {
-    e.preventDefault();
+    // Update the DOM elements (Update these IDs to match your HTML)
+    document.getElementById('total-books').textContent = totalBooks;
+    document.getElementById('read-books').textContent = booksRead;
+    document.getElementById('read-percentage').textContent = `${percentage}%`;
+}
 
-    const title = document.getElementById('book-title').value;
-    const author = document.getElementById('book-author').value;
+// 5. Render the Library to the UI
+function render() {
+    const libraryContainer = document.querySelector('.library-grid');
+    const emptyMessage = document.getElementById('empty-message');
 
-    if (title.trim() === '' || author.trim() === '') {
-        alert("Please enter both title and author.");
+    // FIX: Clear existing cards to prevent duplicates and remove "Empty" message
+    libraryContainer.innerHTML = '';
+
+    if (myLibrary.length === 0) {
+        if (emptyMessage) emptyMessage.style.display = 'block';
+        updateStats();
         return;
+    } else {
+        if (emptyMessage) emptyMessage.style.display = 'none';
     }
 
-    // Create book object
-    const book = {
-        id: Date.now(),
-        title,
-        author,
-        isBorrowed: false // Default status
-    };
+    // Create a card for each book
+    myLibrary.forEach((book, index) => {
+        const card = document.createElement('div');
+        card.classList.add('book-card');
+        card.setAttribute('data-index', index);
 
-    library.push(book);
-    saveData();
-    renderUI();
-    bookForm.reset();
-}
-
-// 5. Function: Remove Book
-function removeBook(id) {
-    library = library.filter(book => book.id !== id);
-    saveData();
-    renderUI();
-}
-
-// 6. Function: Toggle Borrow Status
-function toggleStatus(id) {
-    const book = library.find(b => b.id === id);
-    if (book) {
-        book.isBorrowed = !book.isBorrowed;
-        saveData();
-        renderUI();
-    }
-}
-
-// 7. Function: Search (Loops & Filter)
-function searchBooks() {
-    const term = searchInput.value.toLowerCase();
-    
-    // We filter the state and pass it to the render function
-    const filteredBooks = library.filter(book => 
-        book.title.toLowerCase().includes(term) || 
-        book.author.toLowerCase().includes(term)
-    );
-    
-    renderUI(filteredBooks);
-}
-
-// 8. Function: Save to LocalStorage
-function saveData() {
-    localStorage.setItem('myLibrary', JSON.stringify(library));
-}
-
-// 9. Function: Render UI
-function renderUI(dataToDisplay = library) {
-    bookList.innerHTML = '';
-
-    dataToDisplay.forEach(book => {
-        const div = document.createElement('div');
-        div.className = `book-item ${book.isBorrowed ? 'borrowed' : ''}`;
-        div.innerHTML = `
-            <div class="book-info">
-                <strong>${book.title}</strong>
-                <span>by ${book.author}</span>
-            </div>
-            <div class="book-actions">
-                <button onclick="toggleStatus(${book.id})">
-                    ${book.isBorrowed ? 'Return' : 'Borrow'}
-                </button>
-                <button class="delete-btn" onclick="removeBook(${book.id})">Remove</button>
-            </div>
+        card.innerHTML = `
+            <h3>${book.title}</h3>
+            <p>By: ${book.author}</p>
+            <p>Pages: ${book.pages}</p>
+            <button class="status-btn">${book.read ? 'Read' : 'Not Read'}</button>
+            <button class="delete-btn">Remove</button>
         `;
-        bookList.appendChild(div);
+
+        // Logic for Toggle Read Status
+        card.querySelector('.status-btn').addEventListener('click', () => {
+            book.read = !book.read;
+            render();
+        });
+
+        // Logic for Delete
+        card.querySelector('.delete-btn').addEventListener('click', () => {
+            myLibrary.splice(index, 1);
+            render();
+        });
+
+        libraryContainer.appendChild(card);
     });
 
-    calculateStats();
+    updateStats();
 }
 
-// 10. Function: Generate Statistics
-function calculateStats() {
-    let borrowedCount = 0;
+// 6. Form Handling
+const bookForm = document.getElementById('add-book-form');
+bookForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('title').value;
+    const author = document.getElementById('author').value;
+    const pages = document.getElementById('pages').value;
+    const read = document.getElementById('read-status').checked;
 
-    // Loop for statistics
-    for (let i = 0; i < library.length; i++) {
-        if (library[i].isBorrowed) {
-            borrowedCount++;
-        }
-    }
-
-    const total = library.length;
-    const available = total - borrowedCount;
-
-    // Update UI
-    totalBooksEl.innerText = total;
-    borrowedCountEl.innerText = borrowedCount;
-    availableCountEl.innerText = available;
-}
+    addBookToLibrary(title, author, pages, read);
+    bookForm.reset(); // Clear the form
+});
