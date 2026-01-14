@@ -9,12 +9,10 @@ function Book(title, author, pages, read, borrowed, borrower) {
     this.borrower = borrower;
 }
 
-// NEW: Save data to browser memory
 function saveToLocal() {
     localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
 }
 
-// NEW: Load data when page opens
 function restoreFromLocal() {
     const savedData = localStorage.getItem('myLibrary');
     if (savedData) {
@@ -25,15 +23,23 @@ function restoreFromLocal() {
 
 function render() {
     const libraryGrid = document.getElementById('library-grid');
+    const searchQuery = document.getElementById('search-bar').value.toLowerCase();
     libraryGrid.innerHTML = ""; 
 
-    if (myLibrary.length === 0) {
-        libraryGrid.innerHTML = '<p class="empty-msg">The library is empty.</p>';
-        updateStats(0, 0);
+    // Filter books based on search input
+    const filteredLibrary = myLibrary.filter(book => 
+        book.title.toLowerCase().includes(searchQuery) || 
+        book.author.toLowerCase().includes(searchQuery)
+    );
+
+    if (filteredLibrary.length === 0) {
+        libraryGrid.innerHTML = '<p class="empty-msg">No books found.</p>';
+        updateStats();
         return;
     }
 
-    myLibrary.forEach((book, index) => {
+    filteredLibrary.forEach((book) => {
+        const originalIndex = myLibrary.indexOf(book);
         const card = document.createElement('div');
         card.classList.add('book-card');
         if (book.borrowed) card.classList.add('borrowed');
@@ -42,24 +48,25 @@ function render() {
             ${book.borrowed ? `<span class="borrower-tag">Borrowed by: ${book.borrower}</span>` : ''}
             <h3>${book.title}</h3>
             <p>By ${book.author} | ${book.pages} pages</p>
-            <button class="status-btn ${book.read ? 'is-read' : ''}" onclick="toggleRead(${index})">
+            <button class="status-btn ${book.read ? 'is-read' : ''}" onclick="toggleRead(${originalIndex})">
                 ${book.read ? 'Read' : 'Not Read'}
             </button>
-            <button class="borrow-btn" onclick="toggleBorrow(${index})">
+            <button class="borrow-btn" onclick="toggleBorrow(${originalIndex})">
                 ${book.borrowed ? 'Return Book' : 'Loan Book'}
             </button>
-            <button class="remove-btn" onclick="removeBook(${index})">Remove</button>
+            <button class="remove-btn" onclick="removeBook(${originalIndex})">Remove</button>
         `;
         libraryGrid.appendChild(card);
     });
 
-    const readCount = myLibrary.filter(b => b.read).length;
-    updateStats(myLibrary.length, readCount);
-    saveToLocal(); // Save every time the UI updates
+    updateStats();
+    saveToLocal();
 }
 
-function updateStats(total, read) {
-    const percent = total > 0 ? Math.floor((read / total) * 100) : 0;
+function updateStats() {
+    const total = myLibrary.length;
+    const readCount = myLibrary.filter(b => b.read).length;
+    const percent = total > 0 ? Math.floor((readCount / total) * 100) : 0;
     document.getElementById('total-books').textContent = total;
     document.getElementById('read-percentage').textContent = `${percent}%`;
 }
@@ -103,9 +110,9 @@ document.getElementById('add-book-form').addEventListener('submit', (e) => {
     e.target.reset();
 });
 
-// START: Try to load existing books first
 restoreFromLocal();
-if (myLibrary.length === 0) render();
+if (myLibrary.length === 0) render();;
+
 
 
 
