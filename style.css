@@ -38,5 +38,24 @@ button { cursor: pointer; padding: 10px; border: none; border-radius: 4px; margi
 .borrow-btn { background: var(--warning); color: white; }
 .remove-btn { background: var(--danger); color: white; }
 #submit-btn { background: var(--primary); color: white; }
+/* This makes the searched text 'pop' */
+mark {
+    background-color: #ffeb3b; /* Bright highlight yellow */
+    color: #000;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: bold;
+    box-shadow: 0 0 5px rgba(255, 235, 59, 0.8);
+}
+
+/* Adds a subtle zoom effect to the cards found in search */
+.book-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
 
 
